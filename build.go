@@ -1,7 +1,6 @@
 package vscodiumbuildpack
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"time"
@@ -63,7 +62,7 @@ func Build(
 		}
 
 		bom := dependencyService.GenerateBillOfMaterials(dependency)
-		launch, build := planner.MergeLayerTypes("vscodium", context.Plan.Entries)
+		launch, build := planner.MergeLayerTypes(VSCODIUM, context.Plan.Entries)
 
 		var buildMetadata packit.BuildMetadata
 		if build {
@@ -74,15 +73,15 @@ func Build(
 		if launch {
 			command := "codium-server"
 			args := []string{
-				"--server-base-path", "${RENKU_BASE_URL_PATH}",
-				"--host", "${RENKU_SESSION_IP}",
-				"--port", "${RENKU_SESSION_PORT}",
-				"--extensions-dir", "${RENKU_MOUNT_DIR}/.vscode/extensions",
-				"--server-data-dir", "${RENKU_MOUNT_DIR}/.vscode",
+				"--server-base-path", "${RENKU_BASE_URL_PATH:-/}",
+				"--host", "${RENKU_SESSION_IP:-0.0.0.0}",
+				"--port", "${RENKU_SESSION_PORT:-8000}",
+				"--extensions-dir", "${RENKU_MOUNT_DIR:-/workspace}/.vscode/extensions",
+				"--server-data-dir", "${RENKU_MOUNT_DIR:-/workspace}/.vscode",
 				"--without-connection-token",
 				"--accept-server-license-terms",
 				"--telemetry-level", "off",
-				"--default-folder", "${RENKU_WORKING_DIR}",
+				"--default-folder", "${RENKU_WORKING_DIR:-/workspace}",
 			}
 			launchMetadata.Processes = []packit.Process{
 				{
@@ -90,34 +89,16 @@ func Build(
 					Command: command,
 					Args:    args,
 					Default: true,
-					Direct:  true,
+					Direct:  false,
 				},
 			}
 			launchMetadata.BOM = bom
 
 		}
 
-		// configureBinPath := filepath.Join(context.CNBPath, "bin", "configure")
-		// currConfigureBinChecksum, err := calculator.Sum(configureBinPath)
-		// if err != nil {
-		// 	return packit.BuildResult{}, fmt.Errorf("checksum failed for file %s: %w", configureBinPath, err)
-		// }
-
-		// if !shouldInstall(layer.Metadata, currConfigureBinChecksum, dependency.Checksum) {
-		// 	logger.Process("Reusing cached layer %s", layer.Path)
-		// 	logger.Break()
-
-		// 	layer.Launch, layer.Build = launch, build
-
-		// 	return packit.BuildResult{
-		// 		Layers: []packit.Layer{layer},
-		// 		Build:  buildMetadata,
-		// 		Launch: launchMetadata,
-		// 	}, nil
-		// }
-
 		logger.Process("Executing build process")
 
+		// TODO: check layer caching so we don't reinstall if already installed
 		layer, err = layer.Reset()
 		if err != nil {
 			return packit.BuildResult{}, err
@@ -130,22 +111,20 @@ func Build(
 			return dependencyService.Deliver(dependency, context.CNBPath, layer.Path, context.Platform.Path)
 		})
 		if err != nil {
-			fmt.Printf("%v", err)
 			return packit.BuildResult{}, err
 		}
 
 		layer.Metadata = map[string]interface{}{
 			DepKey: dependency.Checksum,
-			// ConfigureBinKey: currConfigureBinChecksum,
 		}
 
 		logger.Action("Completed in %s", duration.Round(time.Millisecond))
 		logger.Break()
 
-		layer.SharedEnv.Append("PATH", filepath.Join(layer.Path, "sbin"), string(os.PathListSeparator))
-		// layer.ExecD = []string{configureBinPath}
+		layer.SharedEnv.Append("PATH", filepath.Join(layer.Path, "bin"), string(os.PathListSeparator))
 
 		// TODO: use execd to set up vscodium extensions and set env vars
+		// layer.ExecD = []string{configureBinPath}
 		// layer.LaunchEnv.Default("APP_ROOT", context.WorkingDir)
 		// layer.LaunchEnv.Default("PORT", "8080")
 

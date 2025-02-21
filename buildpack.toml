@@ -1,8 +1,8 @@
-api = "0.7"
+api = "0.8"
 
 # General metadata about the buildpack that is used be the lifecycle
 [buildpack]
-id = "renkulab/vscodium"
+id = "vscodium"
 name = "VSCodium Buildpack"
 version = "0.0.1"
 
@@ -14,11 +14,11 @@ pre-package = "./scripts/build.sh"
 vscodium = "1.97.*"
 
 [[metadata.dependencies]]
-checksum = "sha256:aa0248375a070c49cfc9e1c971ff758fb1370177f61ce6570504235e6270a793"
+checksum = "sha256:95e6a874410075ccf6831657c2f1bac49d925fee34a0d1cf7e7973ef13ba87eb"
 id = "vscodium"
 licenses = ["MIT"]
 name = "VSCodium"
-uri = "https://github.com/VSCodium/vscodium/releases/download/1.97.2.25045/VSCodium-linux-x64-1.97.2.25045.tar.gz"
+uri = "https://github.com/VSCodium/vscodium/releases/download/1.97.2.25045/vscodium-reh-web-linux-x64-1.97.2.25045.tar.gz"
 stacks = ["io.buildpacks.stacks.jammy"]
 version = "1.97.2"
 
