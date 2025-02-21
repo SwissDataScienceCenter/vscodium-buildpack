@@ -2,6 +2,7 @@ package vscodiumbuildpack
 
 import (
 	"os"
+	"os/exec"
 	"path/filepath"
 	"time"
 
@@ -73,15 +74,15 @@ func Build(
 		if launch {
 			command := "codium-server"
 			args := []string{
-				"--server-base-path", "${RENKU_BASE_URL_PATH:-/}",
-				"--host", "${RENKU_SESSION_IP:-0.0.0.0}",
-				"--port", "${RENKU_SESSION_PORT:-8000}",
-				"--extensions-dir", "${RENKU_MOUNT_DIR:-/workspace}/.vscode/extensions",
-				"--server-data-dir", "${RENKU_MOUNT_DIR:-/workspace}/.vscode",
+				"--server-base-path", "${BASE_URL_PATH}",
+				"--host", "${HOST}",
+				"--port", "${PORT}",
+				"--extensions-dir", "${ROOT_DIR}/.vscode/extensions",
+				"--server-data-dir", "${ROOT_DIR}/.vscode",
 				"--without-connection-token",
 				"--accept-server-license-terms",
 				"--telemetry-level", "off",
-				"--default-folder", "${RENKU_WORKING_DIR:-/workspace}",
+				"--default-folder", "${WORK_DIR}",
 			}
 			launchMetadata.Processes = []packit.Process{
 				{
@@ -123,14 +124,33 @@ func Build(
 
 		layer.SharedEnv.Append("PATH", filepath.Join(layer.Path, "bin"), string(os.PathListSeparator))
 
-		// TODO: use execd to set up vscodium extensions and set env vars
-		// layer.ExecD = []string{configureBinPath}
-		// layer.LaunchEnv.Default("APP_ROOT", context.WorkingDir)
-		// layer.LaunchEnv.Default("PORT", "8080")
+		layer.ExecD = []string{filepath.Join(context.CNBPath, "bin", "install-extensions")}
+		layer.LaunchEnv.Default("HOST", "0.0.0.0")
+		layer.LaunchEnv.Default("PORT", "8000")
+		layer.LaunchEnv.Default("WORK_DIR", context.WorkingDir)
+		layer.LaunchEnv.Default("ROOT_DIR", context.WorkingDir)
+		layer.LaunchEnv.Default("BASE_URL_PATH", "/")
 
 		logger.EnvironmentVariables(layer)
 
 		logger.LaunchProcesses(launchMetadata.Processes)
+
+		// we set the permission of workspace to be writable, as by default it is not for security reasons
+		// it would be nice if we could get these numbers programmatically, but they're hardcoded in the
+		// paketo run image and there's no way to get them
+		cmd := exec.Command("ls", "-alhn", context.WorkingDir)
+		out, err := cmd.Output()
+		logger.Title("%s", out)
+		cmd = exec.Command("id")
+		out, err = cmd.Output()
+		logger.Title("%s", out)
+		err = os.Chmod(context.WorkingDir, 0775)
+		if err != nil {
+			return packit.BuildResult{}, err
+		}
+		cmd = exec.Command("ls", "-alhn", context.WorkingDir)
+		out, err = cmd.Output()
+		logger.Title("%s", out)
 
 		logger.GeneratingSBOM(layer.Path)
 		var sbomContent sbom.SBOM

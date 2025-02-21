@@ -1,4 +1,3 @@
-
 #!/usr/bin/env bash
 
 set -eu
@@ -29,6 +28,7 @@ function main() {
   mkdir -p "${BUILDPACKDIR}/bin"
 
   run::build
+  cmd::build
 }
 
 function usage() {
@@ -43,7 +43,6 @@ USAGE
 }
 
 function run::build() {
-  printf "%s" "Building"
   if [[ -f "${BUILDPACKDIR}/run/main.go" ]]; then
     pushd "${BUILDPACKDIR}/bin" > /dev/null || return
       printf "%s" "Building run... "
@@ -76,5 +75,28 @@ function run::build() {
   fi
 }
 
+function cmd::build() {
+  if [[ -d "${BUILDPACKDIR}/cmd" ]]; then
+    local name
+    for src in "${BUILDPACKDIR}"/cmd/*; do
+      name="$(basename "${src}")"
+
+      if [[ -f "${src}/main.go" ]]; then
+        printf "%s" "Building ${name}... "
+
+        GOOS="linux" \
+        CGO_ENABLED=0 \
+          go build \
+            -ldflags="-s -w" \
+            -o "${BUILDPACKDIR}/bin/${name}" \
+              "${src}/main.go"
+
+        echo "Success!"
+      else
+        printf "%s" "Skipping ${name}... "
+      fi
+    done
+  fi
+}
 
 main "${@:-}"

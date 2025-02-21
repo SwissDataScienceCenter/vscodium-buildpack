@@ -7,7 +7,7 @@ name = "VSCodium Buildpack"
 version = "0.0.1"
 
 [metadata]
-include-files = ["bin/run", "bin/detect", "bin/build", "buildpack.toml"]
+include-files = ["bin/run", "bin/detect", "bin/build", "bin/install-extensions", "buildpack.toml"]
 pre-package = "./scripts/build.sh"
 
 [metadata.default-versions]
