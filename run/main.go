@@ -5,7 +5,9 @@ import (
 
 	vscodium "github.com/SwissDataScienceCenter/vscodium-buildpack"
 	"github.com/paketo-buildpacks/packit/v2"
+	"github.com/paketo-buildpacks/packit/v2/cargo"
 	"github.com/paketo-buildpacks/packit/v2/chronos"
+	"github.com/paketo-buildpacks/packit/v2/fs"
 	"github.com/paketo-buildpacks/packit/v2/postal"
 	"github.com/paketo-buildpacks/packit/v2/sbom"
 	"github.com/paketo-buildpacks/packit/v2/scribe"
@@ -20,9 +22,10 @@ func main() {
 	logger := scribe.NewEmitter(os.Stdout).WithLevel(os.Getenv("BP_LOG_LEVEL"))
 
 	packit.Run(
-		vscodium.Detect(),
+		vscodium.Detect(vscodium.NewParser()),
 		vscodium.Build(
-			Generator{},
+			postal.NewService(cargo.NewTransport()),
+			fs.NewChecksumCalculator(), Generator{},
 			logger,
 			chronos.DefaultClock),
 	)
