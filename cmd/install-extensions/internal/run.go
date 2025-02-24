@@ -17,15 +17,15 @@ func Run(environment map[string]string) error {
 	exPath := filepath.Dir(ex)
 
 	codium_path := filepath.Join(exPath, "..", "bin", "codium-server")
-	workdir, ok := environment["ROOT_DIR"]
+	workdir, ok := environment["RENKU_MOUNT_DIR"]
 	if !ok {
 		log.Fatal("ROOT_DIR environment variable not set")
 	}
-
-	extensions := []string{"ms-python.python", "ms-toolsai.jupyter"}
-	if val, ok := environment["VSCODIUM_EXTENSIONS"]; ok {
-		extensions = strings.Split(val, " ")
+	ext, ok := environment["VSCODIUM_EXTENSIONS"]
+	if !ok {
+		log.Fatal("VSCODIUM_EXTENSIONS env var missing")
 	}
+	extensions := strings.Split(ext, " ")
 	vscode_dir := filepath.Join(workdir, ".vscode")
 	extension_dir := filepath.Join(vscode_dir, "extensions")
 	err = os.MkdirAll(extension_dir, 0755)
