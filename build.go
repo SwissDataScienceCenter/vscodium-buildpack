@@ -20,7 +20,7 @@ type DependencyService interface {
 	GenerateBillOfMaterials(dependencies ...postal.Dependency) []packit.BOMEntry
 }
 
-//go:generate faux --interface Calculator --output fakes/calculator.go
+//go:generate faux --interface ChecksumCalculator --output fakes/calculator.go
 type ChecksumCalculator interface {
 	Sum(paths ...string) (string, error)
 }
