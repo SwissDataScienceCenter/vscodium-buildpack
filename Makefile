@@ -55,3 +55,12 @@ vet: ## Run go vet against code.
 .PHONY: test
 test: fmt vet ## Run tests.
 	go test ./... -coverprofile cover.out
+
+
+.PHONY:
+build:
+	scripts/build.sh
+
+.PHONY: package
+package: build
+	scripts/package.sh
