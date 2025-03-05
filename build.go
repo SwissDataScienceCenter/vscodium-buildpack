@@ -1,6 +1,7 @@
 package vscodiumbuildpack
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"time"
@@ -20,7 +21,7 @@ type DependencyService interface {
 }
 
 //go:generate faux --interface Calculator --output fakes/calculator.go
-type Calculator interface {
+type ChecksumCalculator interface {
 	Sum(paths ...string) (string, error)
 }
 
@@ -31,7 +32,7 @@ type SBOMGenerator interface {
 
 func Build(
 	dependencyService DependencyService,
-	calculator Calculator,
+	calculator ChecksumCalculator,
 	sbomGenerator SBOMGenerator,
 	logger scribe.Emitter,
 	clock chronos.Clock,
@@ -48,7 +49,10 @@ func Build(
 		})
 		logger.Candidates(sortedEntries)
 
-		entryVersion, _ := entry.Metadata["version"].(string)
+		entryVersion, ok := entry.Metadata["version"].(string)
+		if !ok {
+			return packit.BuildResult{}, errors.New("Couldn't convert metadata version to string.")
+		}
 		dependency, err := dependencyService.Resolve(filepath.Join(context.CNBPath, "buildpack.toml"), entry.Name, entryVersion, context.Stack)
 		if err != nil {
 			return packit.BuildResult{}, err

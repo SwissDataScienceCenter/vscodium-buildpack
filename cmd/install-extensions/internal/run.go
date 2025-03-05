@@ -5,10 +5,9 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
 )
 
-func Run(environment map[string]string) error {
+func Run(mount_dir string, extensions []string) error {
 
 	ex, err := os.Executable()
 	if err != nil {
@@ -17,16 +16,7 @@ func Run(environment map[string]string) error {
 	exPath := filepath.Dir(ex)
 
 	codium_path := filepath.Join(exPath, "..", "bin", "codium-server")
-	workdir, ok := environment["RENKU_MOUNT_DIR"]
-	if !ok {
-		log.Fatal("ROOT_DIR environment variable not set")
-	}
-	ext, ok := environment["VSCODIUM_EXTENSIONS"]
-	if !ok {
-		log.Fatal("VSCODIUM_EXTENSIONS env var missing")
-	}
-	extensions := strings.Split(ext, " ")
-	vscode_dir := filepath.Join(workdir, ".vscode")
+	vscode_dir := filepath.Join(mount_dir, ".vscode")
 	extension_dir := filepath.Join(vscode_dir, "extensions")
 	err = os.MkdirAll(extension_dir, 0755)
 	if err != nil {
