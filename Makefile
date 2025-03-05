@@ -63,3 +63,12 @@ vet: ## Run go vet against code.
 test: fmt vet faux ## Run tests.
 	PATH="$(LOCALBIN):$(PATH)" go generate
 	go test ./... -coverprofile cover.out
+
+
+.PHONY:
+build:
+	scripts/build.sh
+
+.PHONY: package
+package: build
+	scripts/package.sh
