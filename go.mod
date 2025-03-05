@@ -3,10 +3,9 @@ module github.com/SwissDataScienceCenter/vscodium-buildpack
 go 1.24.0
 
 require (
-	github.com/BurntSushi/toml v1.4.0 // indirect
+	github.com/BurntSushi/toml v1.4.0
 	github.com/CycloneDX/cyclonedx-go v0.7.2 // indirect
 	github.com/DataDog/zstd v1.5.5 // indirect
-	github.com/Masterminds/semver v1.5.0
 	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/anchore/syft v0.80.0 // indirect
 	github.com/bmatcuk/doublestar/v4 v4.6.1 // indirect
@@ -39,6 +38,11 @@ require (
 	golang.org/x/sys v0.21.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
+)
+
+require (
+	github.com/onsi/gomega v1.33.1
+	github.com/sclevine/spec v1.4.0
 )
 
 require (
