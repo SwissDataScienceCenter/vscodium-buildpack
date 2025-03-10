@@ -10,7 +10,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Package Buildpack
-        run: scripts/package.sh --version "${{ github.event.release.name }}"
+        run: make package version="${{ github.event.release.name }}"
       - name: Publish Buildpack
         uses: softprops/action-gh-release@v2
         with:
