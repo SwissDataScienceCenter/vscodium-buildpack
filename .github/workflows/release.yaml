@@ -6,12 +6,51 @@ permissions:
   contents: write
 jobs:
   build-and-publish-buildpack:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - name: Package Buildpack
-        run: make package version="${{ github.event.release.name }}"
+        run: make package version="${{ github.event.release.tag_name }}"
       - name: Publish Buildpack
         uses: softprops/action-gh-release@v2
         with:
           files: build/*
+  push-to-ghcr:
+    needs: build-and-publish-buildpack
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Parse Event
+        id: event
+        run: |
+          FULL_VERSION="$(echo ${{ github.event.release.tag_name }} | sed s/^v//)"
+          MINOR_VERSION="$(echo "${FULL_VERSION}" | awk -F '.' '{print $1 "." $2 }')"
+          MAJOR_VERSION="$(echo "${FULL_VERSION}" | awk -F '.' '{print $1 }')"
+          echo "tag_full=${FULL_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "tag_minor=${MINOR_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "tag_major=${MAJOR_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "download_url=$(jq -r '.release.assets[] | select(.name | endswith(".cnb")) | .url' "${GITHUB_EVENT_PATH}")" >> "$GITHUB_OUTPUT"      
+      - name: download
+        id: download
+        uses: paketo-buildpacks/github-config/actions/release/download-asset@main
+        with:
+          url: ${{ steps.event.outputs.download_url }}
+          output: "/github/workspace/buildpackage.cnb"
+          token: ${{ secrets.RENKUBOT_GITHUB_TOKEN }}      
+      - name: Validate version
+        run: |
+          buidpackTomlVersion=$(sudo skopeo inspect "oci-archive:${GITHUB_WORKSPACE}/buildpackage.cnb" | jq -r '.Labels."io.buildpacks.buildpackage.metadata" | fromjson | .version')
+          githubReleaseVersion="${{ steps.event.outputs.tag_full }}"
+          if [[ "$buidpackTomlVersion" != "$githubReleaseVersion" ]]; then
+            echo "Version in buildpack.toml ($buidpackTomlVersion) and github release ($githubReleaseVersion) are not identical"
+            exit 1
+          fi        
+      - name: Push to GHCR
+        env:
+          RENKUBOT_GITHUB_TOKEN: ${{ secrets.RENKUBOT_GITHUB_TOKEN }}
+        run: |
+          echo "${RENKUBOT_GITHUB_TOKEN}" | sudo skopeo login --username RenkuBot --password-stdin ghcr.io
+          sudo skopeo copy "oci-archive:${GITHUB_WORKSPACE}/buildpackage.cnb" "docker://ghcr.io/${{ github.repository }}:${{ steps.event.outputs.tag_full }}"
+          sudo skopeo copy "oci-archive:${GITHUB_WORKSPACE}/buildpackage.cnb" "docker://ghcr.io/${{ github.repository }}:${{ steps.event.outputs.tag_minor }}"
+          sudo skopeo copy "oci-archive:${GITHUB_WORKSPACE}/buildpackage.cnb" "docker://ghcr.io/${{ github.repository }}:${{ steps.event.outputs.tag_major }}"
+          sudo skopeo copy "oci-archive:${GITHUB_WORKSPACE}/buildpackage.cnb" "docker://ghcr.io/${{ github.repository }}:latest"
