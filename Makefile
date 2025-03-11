@@ -70,7 +70,7 @@ build:
 
 .PHONY: package
 package: build
-	ifndef version
+ifndef version
 		$(error "`version` flag is not set, pass is like `version=1.2.3`")
-	endif
+endif
 	scripts/package.sh --version $(version)
