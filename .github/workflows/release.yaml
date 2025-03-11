@@ -32,7 +32,7 @@ jobs:
           echo "tag_full=${FULL_VERSION}" >> "$GITHUB_OUTPUT"
           echo "tag_minor=${MINOR_VERSION}" >> "$GITHUB_OUTPUT"
           echo "tag_major=${MAJOR_VERSION}" >> "$GITHUB_OUTPUT"
-          echo "download_url=$(echo "${{needs.build-and-publish-buildpack}}|jq -r '.| select(.name | endswith(".cnb")) | .url')" >> "$GITHUB_OUTPUT"      
+          echo "download_url=$(echo "${{needs.build-and-publish-buildpack.outputs.assets}}|jq -r '.| select(.name | endswith(".cnb")) | .url')" >> "$GITHUB_OUTPUT"      
       - name: download
         id: download
         uses: paketo-buildpacks/github-config/actions/release/download-asset@main
