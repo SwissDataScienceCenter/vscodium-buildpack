@@ -63,3 +63,14 @@ vet: ## Run go vet against code.
 test: fmt vet faux ## Run tests.
 	PATH="$(LOCALBIN):$(PATH)" go generate
 	go test ./... -coverprofile cover.out
+
+.PHONY: build
+build:
+	scripts/build.sh
+
+.PHONY: package
+package: build
+	ifndef version
+		$(error "`version` flag is not set, pass is like `version=1.2.3`")
+	endif
+	scripts/package.sh --version $(version)
