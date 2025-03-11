@@ -7,12 +7,15 @@ permissions:
 jobs:
   build-and-publish-buildpack:
     runs-on: ubuntu-24.04
+    outputs:
+      assets: ${{ steps.publish-cnb.outputs.assets }}
     steps:
       - uses: actions/checkout@v4
       - name: Package Buildpack
         run: make package version="${{ github.event.release.tag_name }}"
       - name: Publish Buildpack
         uses: softprops/action-gh-release@v2
+        id: publish-cnb
         with:
           files: build/*
   push-to-ghcr:
@@ -29,7 +32,7 @@ jobs:
           echo "tag_full=${FULL_VERSION}" >> "$GITHUB_OUTPUT"
           echo "tag_minor=${MINOR_VERSION}" >> "$GITHUB_OUTPUT"
           echo "tag_major=${MAJOR_VERSION}" >> "$GITHUB_OUTPUT"
-          echo "download_url=$(jq -r '.release.assets[] | select(.name | endswith(".cnb")) | .url' "${GITHUB_EVENT_PATH}")" >> "$GITHUB_OUTPUT"      
+          echo "download_url=$(echo "${{needs.build-and-publish-buildpack}}|"jq -r '.| select(.name | endswith(".cnb")) | .url')" >> "$GITHUB_OUTPUT"      
       - name: download
         id: download
         uses: paketo-buildpacks/github-config/actions/release/download-asset@main
