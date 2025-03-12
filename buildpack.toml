@@ -33,3 +33,4 @@ stable = "1.96.*"
 
 [[stacks]]
 id = "io.buildpacks.stacks.jammy"
+
