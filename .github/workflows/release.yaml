@@ -42,7 +42,7 @@ jobs:
         with:
           url: ${{ steps.event.outputs.download_url }}
           output: "/github/workspace/buildpackage.cnb"
-          token: ${{ secrets.RENKUBOT_GITHUB_TOKEN }}      
+          token: ${{ secrets.GITHUB_TOKEN }}      
       - name: Validate version
         run: |
           buidpackTomlVersion=$(sudo skopeo inspect "oci-archive:${GITHUB_WORKSPACE}/buildpackage.cnb" | jq -r '.Labels."io.buildpacks.buildpackage.metadata" | fromjson | .version')
@@ -57,15 +57,14 @@ jobs:
       - name: Push to GHCR
         id: push
         env:
-          RENKUBOT_GITHUB_TOKEN: ${{ secrets.RENKUBOT_GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN}}
         run: |
-          echo "${RENKUBOT_GITHUB_TOKEN}" | sudo skopeo login --username RenkuBot --password-stdin ghcr.io
+          echo "${GITHUB_TOKEN}" | sudo skopeo login --username "${{github.actor}}" --password-stdin ghcr.io
           sudo skopeo copy "oci-archive:${GITHUB_WORKSPACE}/buildpackage.cnb" "docker://ghcr.io/${REPO_NAME}:${{ steps.event.outputs.tag_full }}"
           sudo skopeo copy "oci-archive:${GITHUB_WORKSPACE}/buildpackage.cnb" "docker://ghcr.io/${REPO_NAME}:${{ steps.event.outputs.tag_minor }}"
           sudo skopeo copy "oci-archive:${GITHUB_WORKSPACE}/buildpackage.cnb" "docker://ghcr.io/${REPO_NAME}:${{ steps.event.outputs.tag_major }}"
           sudo skopeo copy "oci-archive:${GITHUB_WORKSPACE}/buildpackage.cnb" "docker://ghcr.io/${REPO_NAME}:latest"
-          echo "${{env.registry}}"
-          echo "image=${REPO_NAME}" >> "$GITHUB_OUTPUT"
+          echo "image=ghcr.io/${REPO_NAME}" >> "$GITHUB_OUTPUT"
           echo "digest=$(sudo skopeo inspect "oci-archive:${GITHUB_WORKSPACE}/buildpackage.cnb" | jq -r .Digest)" >> $GITHUB_OUTPUT
       - name: Generate artifact attestation
         uses: actions/attest-build-provenance@v2
@@ -73,5 +72,5 @@ jobs:
           subject-name: ${{ steps.push.outputs.image }}
           subject-digest: ${{ steps.push.outputs.digest}}
           push-to-registry: true
-          github-token: ${{ secrets.RENKUBOT_GITHUB_TOKEN}}
+          github-token: ${{ secrets.GITHUB_TOKEN}}
           show-summary: true
