@@ -64,6 +64,7 @@ jobs:
           sudo skopeo copy "oci-archive:${GITHUB_WORKSPACE}/buildpackage.cnb" "docker://ghcr.io/${REPO_NAME}:${{ steps.event.outputs.tag_minor }}"
           sudo skopeo copy "oci-archive:${GITHUB_WORKSPACE}/buildpackage.cnb" "docker://ghcr.io/${REPO_NAME}:${{ steps.event.outputs.tag_major }}"
           sudo skopeo copy "oci-archive:${GITHUB_WORKSPACE}/buildpackage.cnb" "docker://ghcr.io/${REPO_NAME}:latest"
+          echo "${{env.registry}}"
           echo "image=${REPO_NAME}" >> "$GITHUB_OUTPUT"
           echo "digest=$(sudo skopeo inspect "oci-archive:${GITHUB_WORKSPACE}/buildpackage.cnb" | jq -r .Digest)" >> $GITHUB_OUTPUT
       - name: Generate artifact attestation
