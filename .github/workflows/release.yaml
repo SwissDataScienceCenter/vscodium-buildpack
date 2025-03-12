@@ -72,4 +72,5 @@ jobs:
           subject-name: ${{ steps.push.outputs.image }}
           subject-digest: ${{ steps.push.outputs.digest}}
           push-to-registry: true
-          token: ${{ secrets.RENKUBOT_GITHUB_TOKEN}}
+          github-token: ${{ secrets.RENKUBOT_GITHUB_TOKEN}}
+          show-summary: true
