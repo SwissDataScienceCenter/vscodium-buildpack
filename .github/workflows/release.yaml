@@ -60,11 +60,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN}}
         run: |
           echo "${GITHUB_TOKEN}" | sudo skopeo login --username "${{github.actor}}" --password-stdin ghcr.io
-          sudo skopeo copy "oci-archive:${GITHUB_WORKSPACE}/buildpackage.cnb" "docker://ghcr.io/${REPO_NAME}:${{ steps.event.outputs.tag_full }}"
-          sudo skopeo copy "oci-archive:${GITHUB_WORKSPACE}/buildpackage.cnb" "docker://ghcr.io/${REPO_NAME}:${{ steps.event.outputs.tag_minor }}"
-          sudo skopeo copy "oci-archive:${GITHUB_WORKSPACE}/buildpackage.cnb" "docker://ghcr.io/${REPO_NAME}:${{ steps.event.outputs.tag_major }}"
-          sudo skopeo copy "oci-archive:${GITHUB_WORKSPACE}/buildpackage.cnb" "docker://ghcr.io/${REPO_NAME}:latest"
-          echo "image=ghcr.io/${REPO_NAME}" >> "$GITHUB_OUTPUT"
+          sudo skopeo -v copy "oci-archive:${GITHUB_WORKSPACE}/buildpackage.cnb" "docker://ghcr.io/${REPO_NAME}/vscodium:${{ steps.event.outputs.tag_full }}"
+          sudo skopeo -v copy "oci-archive:${GITHUB_WORKSPACE}/buildpackage.cnb" "docker://ghcr.io/${REPO_NAME}/vscodium:${{ steps.event.outputs.tag_minor }}"
+          sudo skopeo -v copy "oci-archive:${GITHUB_WORKSPACE}/buildpackage.cnb" "docker://ghcr.io/${REPO_NAME}/vscodium:${{ steps.event.outputs.tag_major }}"
+          sudo skopeo -v copy "oci-archive:${GITHUB_WORKSPACE}/buildpackage.cnb" "docker://ghcr.io/${REPO_NAME}/vscodium:latest"
+          echo "image=ghcr.io/${REPO_NAME}/vscodium" >> "$GITHUB_OUTPUT"
           echo "digest=$(sudo skopeo inspect "oci-archive:${GITHUB_WORKSPACE}/buildpackage.cnb" | jq -r .Digest)" >> $GITHUB_OUTPUT
       - name: Generate artifact attestation
         uses: actions/attest-build-provenance@v2
