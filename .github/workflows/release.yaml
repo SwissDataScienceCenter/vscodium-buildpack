@@ -66,10 +66,3 @@ jobs:
           sudo skopeo -v copy "oci-archive:${GITHUB_WORKSPACE}/buildpackage.cnb" "docker://ghcr.io/${REPO_NAME}/vscodium:latest"
           echo "image=ghcr.io/${REPO_NAME}/vscodium" >> "$GITHUB_OUTPUT"
           echo "digest=$(sudo skopeo inspect "oci-archive:${GITHUB_WORKSPACE}/buildpackage.cnb" | jq -r .Digest)" >> $GITHUB_OUTPUT
-      - name: Generate artifact attestation
-        uses: actions/attest-build-provenance@v2
-        with:
-          subject-name: ${{ steps.push.outputs.image }}
-          subject-digest: ${{ steps.push.outputs.digest}}
-          push-to-registry: true
-          show-summary: true
