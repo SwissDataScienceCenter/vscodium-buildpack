@@ -7,7 +7,13 @@ name = "VSCodium Buildpack"
 version = "0.0.1"
 
 [metadata]
-include-files = ["bin/run", "bin/detect", "bin/build", "bin/install-extensions", "buildpack.toml"]
+include-files = [
+  "bin/run",
+  "bin/detect",
+  "bin/build",
+  "bin/install-extensions",
+  "buildpack.toml",
+]
 pre-package = "./scripts/build.sh"
 
 [metadata.default-versions]
@@ -19,8 +25,9 @@ id = "vscodium"
 licenses = ["MIT"]
 name = "VSCodium"
 uri = "https://github.com/VSCodium/vscodium/releases/download/1.96.4.25026/vscodium-reh-web-linux-x64-1.96.4.25026.tar.gz"
-stacks = ["io.buildpacks.stacks.jammy"]
+stacks = ["*"]
 version = "1.96.4"
+
 
 [[metadata.dependency-constraints]]
 constraint = "1.96.*"
@@ -32,5 +39,4 @@ stable = "1.96.*"
 # The list of stacks that the buildpack itself is compatible with
 
 [[stacks]]
-id = "io.buildpacks.stacks.jammy"
-
+id = "*"
