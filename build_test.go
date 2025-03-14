@@ -154,7 +154,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 
 		Expect(result.Launch.Processes).To(Equal([]packit.Process{
 			{
-				Type:    "web",
+				Type:    "vscodium",
 				Command: "codium-server",
 				Args: []string{
 					"--server-base-path", "${RENKU_BASE_URL_PATH}/",
