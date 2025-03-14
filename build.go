@@ -89,7 +89,7 @@ func Build(
 			}
 			launchMetadata.Processes = []packit.Process{
 				{
-					Type:    "web",
+					Type:    "vscodium",
 					Command: command,
 					Args:    args,
 					Default: true,
