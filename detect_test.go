@@ -2,6 +2,7 @@ package vscodiumbuildpack_test
 
 import (
 	"errors"
+	"os"
 	"testing"
 
 	vscodium "github.com/SwissDataScienceCenter/vscodium-buildpack"
@@ -18,17 +19,28 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 
 		workingDir string
 
-		versionParser *fakes.VersionParser
-		detect        packit.DetectFunc
+		versionParser       *fakes.VersionParser
+		detect              packit.DetectFunc
+		originalFrontendVar string
 	)
 
 	it.Before(func() {
+		originalFrontendVar = os.Getenv(vscodium.RenkuFrontendEnvKey)
+		os.Setenv(vscodium.RenkuFrontendEnvKey, vscodium.RenkuFrontendEnvValue)
 		workingDir = t.TempDir()
 
 		versionParser = &fakes.VersionParser{}
 		versionParser.ResolveVersionCall.Returns.ResultVersion = "1.96.*"
 
 		detect = vscodium.Detect(versionParser)
+	})
+
+	it.After(func() {
+		if originalFrontendVar == "" {
+			os.Unsetenv(vscodium.RenkuFrontendEnvKey)
+		} else {
+			os.Setenv(vscodium.RenkuFrontendEnvKey, originalFrontendVar)
+		}
 	})
 
 	it("returns a plan that provides vscodium", func() {
