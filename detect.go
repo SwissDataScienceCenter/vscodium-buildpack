@@ -11,7 +11,10 @@ type VersionParser interface {
 	ResolveVersion(cnbPath, version string) (resultVersion string, err error)
 }
 
-const RenkuFrontendEnvKey = "RENKU_FRONTENDS"
+// NOTE: According to the spec if the env variable is not preceeded with BP_
+// then the env variable can be overwritten by the lifecycle.
+// https://github.com/buildpacks/spec/blob/main/buildpack.md#provided-by-the-platform
+const RenkuFrontendEnvKey = "BP_RENKU_FRONTENDS"
 const RenkuFrontendEnvValue = "vscodium"
 
 type BuildPlanMetadata struct {
