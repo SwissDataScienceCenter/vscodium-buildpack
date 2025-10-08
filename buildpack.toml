@@ -8,18 +8,24 @@ version = "0.0.1"
 
 [metadata]
 include-files = [
-  "bin/run",
-  "bin/detect",
-  "bin/build",
-  "bin/install-extensions",
   "buildpack.toml",
+  "linux/amd64/bin/build",
+  "linux/amd64/bin/detect",
+  "linux/amd64/bin/run",
+  "linux/amd64/bin/install-extensions",
+  "linux/arm64/bin/build",
+  "linux/arm64/bin/detect",
+  "linux/arm64/bin/run",
+  "linux/arm64/bin/install-extensions",
 ]
-pre-package = "./scripts/build.sh"
+pre-package = "./scripts/build.sh --target linux/amd64 --target linux/arm64"
 
 [metadata.default-versions]
 vscodium = "1.96.*"
 
 [[metadata.dependencies]]
+arch = "amd64"
+os = "linux"
 checksum = "sha256:01ec743298a377c404064c33cdcf18d936b43e939e0d2bc645e22e81b0ef4a18"
 id = "vscodium"
 licenses = ["MIT"]
@@ -28,6 +34,16 @@ uri = "https://github.com/VSCodium/vscodium/releases/download/1.96.4.25026/vscod
 stacks = ["*"]
 version = "1.96.4"
 
+[[metadata.dependencies]]
+arch = "arm64"
+os = "linux"
+checksum = "sha256:c2bcf0b138401967347294d8ed2bdf5d0d4eb823cd487ad14e6d52f61c768c8e"
+id = "vscodium"
+licenses = ["MIT"]
+name = "VSCodium"
+uri = "https://github.com/VSCodium/vscodium/releases/download/1.96.4.25026/vscodium-reh-web-linux-arm64-1.96.4.25026.tar.gz"
+stacks = ["*"]
+version = "1.96.4"
 
 [[metadata.dependency-constraints]]
 constraint = "1.96.*"
@@ -40,3 +56,11 @@ stable = "1.96.*"
 
 [[stacks]]
 id = "*"
+
+[[targets]]
+arch = "amd64"
+os = "linux"
+
+[[targets]]
+arch = "arm64"
+os = "linux"
