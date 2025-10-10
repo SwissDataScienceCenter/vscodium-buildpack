@@ -106,9 +106,14 @@ function tools::install() {
     --directory "${BIN_DIR}" \
     --token "${token}"
 
-  util::tools::jam::install \
-    --directory "${BIN_DIR}" \
-    --token "${token}"
+  if [[ -f "${ROOT_DIR}/.libbuildpack" ]]; then
+    util::tools::packager::install \
+      --directory "${BIN_DIR}"
+  else
+    util::tools::jam::install \
+      --directory "${BIN_DIR}" \
+      --token "${token}"
+  fi
 }
 
 function buildpack::archive() {
@@ -118,10 +123,18 @@ function buildpack::archive() {
 
   util::print::title "Packaging ${buildpack_type} into ${BUILD_DIR}/buildpack.tgz..."
 
-  jam pack \
-    "--${buildpack_type}" "${ROOT_DIR}/${buildpack_type}.toml"\
-    --version "${version}" \
-    --output "${BUILD_DIR}/buildpack.tgz"
+  if [[ -f "${ROOT_DIR}/.libbuildpack" ]]; then
+    packager \
+      --uncached \
+      --archive \
+      --version "${version}" \
+      "${BUILD_DIR}/buildpack"
+  else
+    jam pack \
+      "--${buildpack_type}" "${ROOT_DIR}/${buildpack_type}.toml"\
+      --version "${version}" \
+      --output "${BUILD_DIR}/buildpack.tgz"
+  fi
 }
 
 function buildpackage::create() {
@@ -131,26 +144,15 @@ function buildpackage::create() {
 
   util::print::title "Packaging ${buildpack_type}... ${output}"
 
-  if [ "$buildpack_type" == "extension" ]; then
-    cwd=$(pwd)
-    cd ${BUILD_DIR}
-    mkdir cnbdir
-    cd cnbdir
-    cp ../buildpack.tgz .
-    tar -xvf buildpack.tgz
-    rm buildpack.tgz
+  mkdir ${BUILD_DIR}/cnbdir
+  tar -xvf ${BUILD_DIR}/buildpack.tgz -C ${BUILD_DIR}/cnbdir
 
-    pack \
-      extension package "${output}" \
-        --format file
+  pack \
+    "${buildpack_type}" package "${output}" \
+      --path ${BUILD_DIR}/cnbdir \
+      --format file
 
-    cd $cwd
-  else
-    pack \
-      buildpack package "${output}" \
-        --path "${BUILD_DIR}/buildpack.tgz" \
-        --format file
-  fi
+  rm -rf ${BUILD_DIR}/cnbdir
 }
 
 main "${@:-}"

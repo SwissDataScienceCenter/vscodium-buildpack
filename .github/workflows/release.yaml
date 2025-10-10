@@ -35,14 +35,23 @@ jobs:
           echo "tag_full=${FULL_VERSION}" >> "$GITHUB_OUTPUT"
           echo "tag_minor=${MINOR_VERSION}" >> "$GITHUB_OUTPUT"
           echo "tag_major=${MAJOR_VERSION}" >> "$GITHUB_OUTPUT"
-          echo "download_url=$(echo '${{needs.build-and-publish-buildpack.outputs.assets}}'|jq -r '.[]| select(.name | endswith(".cnb")) | .url')" >> "$GITHUB_OUTPUT"      
-      - name: download
-        id: download
+          echo "download_cnb_url=$(echo '${{needs.build-and-publish-buildpack.outputs.assets}}'|jq -r '.[]| select(.name | endswith(".cnb")) | .url')" >> "$GITHUB_OUTPUT"
+          echo "download_tgz_url=$(echo '${{needs.build-and-publish-buildpack.outputs.assets}}'|jq -r '.[]| select(.name | endswith(".tgz")) | .url')" >> "$GITHUB_OUTPUT"
+
+      - name: Download .cnb buildpack
         uses: paketo-buildpacks/github-config/actions/release/download-asset@main
         with:
-          url: ${{ steps.event.outputs.download_url }}
+          url: ${{ steps.event.outputs.download_cnb_url }}
           output: "/github/workspace/buildpackage.cnb"
-          token: ${{ secrets.GITHUB_TOKEN }}      
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download .tgz buildpack
+        uses: paketo-buildpacks/github-config/actions/release/download-asset@main
+        with:
+          url: ${{ steps.event.outputs.download_tgz_url }}
+          output: "/github/workspace/buildpack.tgz"
+          token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Validate version
         run: |
           buidpackTomlVersion=$(sudo skopeo inspect "oci-archive:${GITHUB_WORKSPACE}/buildpackage.cnb" | jq -r '.Labels."io.buildpacks.buildpackage.metadata" | fromjson | .version')
@@ -50,19 +59,32 @@ jobs:
           if [[ "$buidpackTomlVersion" != "$githubReleaseVersion" ]]; then
             echo "Version in buildpack.toml ($buidpackTomlVersion) and github release ($githubReleaseVersion) are not identical"
             exit 1
-          fi        
+          fi
+
       - id: lowercase-repo-name
         run: |
           echo "REPO_NAME=${GITHUB_REPOSITORY@L}" >> "${GITHUB_ENV}"
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Push to GHCR
         id: push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN}}
         run: |
+          IMAGE="ghcr.io/${REPO_NAME}/vscodium"
           echo "${GITHUB_TOKEN}" | sudo skopeo login --username "${{github.actor}}" --password-stdin ghcr.io
-          sudo skopeo -v copy "oci-archive:${GITHUB_WORKSPACE}/buildpackage.cnb" "docker://ghcr.io/${REPO_NAME}/vscodium:${{ steps.event.outputs.tag_full }}"
-          sudo skopeo -v copy "oci-archive:${GITHUB_WORKSPACE}/buildpackage.cnb" "docker://ghcr.io/${REPO_NAME}/vscodium:${{ steps.event.outputs.tag_minor }}"
-          sudo skopeo -v copy "oci-archive:${GITHUB_WORKSPACE}/buildpackage.cnb" "docker://ghcr.io/${REPO_NAME}/vscodium:${{ steps.event.outputs.tag_major }}"
-          sudo skopeo -v copy "oci-archive:${GITHUB_WORKSPACE}/buildpackage.cnb" "docker://ghcr.io/${REPO_NAME}/vscodium:latest"
-          echo "image=ghcr.io/${REPO_NAME}/vscodium" >> "$GITHUB_OUTPUT"
+          ./scripts/publish.sh \
+            --archive-path ${GITHUB_WORKSPACE}/buildpack.tgz \
+            --buildpack-type buildpack \
+            --image-ref "${IMAGE}:${{ steps.event.outputs.tag_full }}"
+          sudo skopeo copy "docker://${IMAGE}:${{ steps.event.outputs.tag_full }}" "docker://${IMAGE}:${{ steps.event.outputs.tag_minor }}" --multi-arch all
+          sudo skopeo copy "docker://${IMAGE}:${{ steps.event.outputs.tag_full }}" "docker://${IMAGE}:${{ steps.event.outputs.tag_major }}" --multi-arch all
+          sudo skopeo copy "docker://${IMAGE}:${{ steps.event.outputs.tag_full }}" "docker://${IMAGE}:latest" --multi-arch all
+          echo "image=${IMAGE}" >> "$GITHUB_OUTPUT"
           echo "digest=$(sudo skopeo inspect "oci-archive:${GITHUB_WORKSPACE}/buildpackage.cnb" | jq -r .Digest)" >> $GITHUB_OUTPUT
