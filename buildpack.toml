@@ -21,7 +21,7 @@ include-files = [
 pre-package = "./scripts/build.sh --target linux/amd64 --target linux/arm64"
 
 [metadata.default-versions]
-vscodium = "1.96.*"
+vscodium = "1.104.36664"
 
 [[metadata.dependencies]]
 arch = "amd64"
@@ -45,13 +45,35 @@ uri = "https://github.com/VSCodium/vscodium/releases/download/1.96.4.25026/vscod
 stacks = ["*"]
 version = "1.96.4"
 
+[[metadata.dependencies]]
+arch = "amd64"
+os = "linux"
+checksum = "sha256:1176c6872c3feb8ccb10c91ed6a0c7c9ecefa15da36e0c6939dd2ab46f09468c"
+id = "vscodium"
+licenses = ["MIT"]
+name = "VSCodium"
+uri = "https://github.com/VSCodium/vscodium/releases/download/1.104.36664/vscodium-reh-web-linux-x64-1.104.36664.tar.gz"
+stacks = ["*"]
+version = "1.104.36664"
+
+[[metadata.dependencies]]
+arch = "arm64"
+os = "linux"
+checksum = "sha256:b315f5dcc0c25a044ddbba1e2508b656284981a3a7513b0ffed605b42ac09260"
+id = "vscodium"
+licenses = ["MIT"]
+name = "VSCodium"
+uri = "https://github.com/VSCodium/vscodium/releases/download/1.104.36664/vscodium-reh-web-linux-arm64-1.104.36664.tar.gz"
+stacks = ["*"]
+version = "1.104.36664"
+
 [[metadata.dependency-constraints]]
-constraint = "1.96.*"
+constraint = "1.104.*"
 id = "vscodium"
 patches = 2
 
 [metadata.version-lines]
-stable = "1.96.*"
+stable = "1.104.*"
 # The list of stacks that the buildpack itself is compatible with
 
 [[stacks]]
