@@ -10,6 +10,7 @@ import (
 	"github.com/SwissDataScienceCenter/vscodium-buildpack/fakes"
 	"github.com/paketo-buildpacks/packit/v2"
 	"github.com/paketo-buildpacks/packit/v2/chronos"
+
 	//nolint Ignore SA1019, informed usage of deprecated package
 	"github.com/paketo-buildpacks/packit/v2/paketosbom"
 	"github.com/paketo-buildpacks/packit/v2/postal"
@@ -157,7 +158,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 				Type:    "vscodium",
 				Command: "codium-server",
 				Args: []string{
-					"--server-base-path", "${RENKU_BASE_URL_PATH}/",
+					"--server-base-path", "${RENKU_BASE_URL_PATH%/}/",
 					"--host", "${RENKU_SESSION_IP}",
 					"--port", "${RENKU_SESSION_PORT}",
 					"--extensions-dir", "${RENKU_MOUNT_DIR}/.vscode/extensions",

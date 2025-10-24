@@ -77,7 +77,7 @@ func Build(
 		if launch {
 			command := "codium-server"
 			args := []string{
-				"--server-base-path", "${RENKU_BASE_URL_PATH}/",
+				"--server-base-path", "${RENKU_BASE_URL_PATH%/}/",
 				"--host", "${RENKU_SESSION_IP}",
 				"--port", "${RENKU_SESSION_PORT}",
 				"--extensions-dir", "${RENKU_MOUNT_DIR}/.vscode/extensions",
