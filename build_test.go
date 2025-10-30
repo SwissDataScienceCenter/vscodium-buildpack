@@ -131,7 +131,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 			"RENKU_SESSION_PORT.default":  "8000",
 			"RENKU_MOUNT_DIR.default":     workspaceDir,
 			"RENKU_WORKING_DIR.default":   workspaceDir,
-			"RENKU_BASE_URL_PATH.default": "/",
+			"RENKU_BASE_URL_PATH.default": "",
 			"VSCODIUM_EXTENSIONS.default": "ms-python.python ms-toolsai.jupyter",
 		}))
 		Expect(layer.Metadata).To(Equal(map[string]interface{}{
@@ -158,7 +158,7 @@ func testBuild(t *testing.T, context spec.G, it spec.S) {
 				Type:    "vscodium",
 				Command: "codium-server",
 				Args: []string{
-					"--server-base-path", "${RENKU_BASE_URL_PATH%/}/",
+					"--server-base-path", "${RENKU_BASE_URL_PATH%/}",
 					"--host", "${RENKU_SESSION_IP}",
 					"--port", "${RENKU_SESSION_PORT}",
 					"--extensions-dir", "${RENKU_MOUNT_DIR}/.vscode/extensions",
